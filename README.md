@@ -136,10 +136,7 @@ const CustomPayButton = () => {
       requestBody: {/*request body*/},
       onSuccess: (data) => console.log('Payment successful', data),
       onFailure: (data) => console.log('Payment failed', data),
-      onClose: (data) => {
-        console.log("Closed data:", data);
-        alert("Closed");
-      }
+      onClose: (data) => console.log("Closed data:", data)
     });
   };
 
@@ -187,8 +184,9 @@ A component that initiates the payment process. It provides an easy-to-use inter
 
 **Props**
 - `requestBody`: An object containing the details of the payment.
-- `onSuccess`: A callback function that is called when the payment is successful.
-- `onFailure`: A callback function that is called when the payment fails.
+- `onSuccess`(optional): A callback function that is called when the payment is successful.
+- `onFailure`(optional): A callback function that is called when the payment fails.
+- `onClosed`(optional): A callback function that is called when the payment modal or window is closed by clicking the close button.
 - `displayMode` (optional): "inline" or "popup". Defaults to "inline".
 
 **Example**
