@@ -39,5 +39,9 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/chibuzoraustine/mpw-checkout-react.git"
-  }
+  },
+  "bugs": {
+    "url": "https://github.com/chibuzoraustine/mpw-checkout-react/issues"
+  },
+  "homepage": "https://github.com/chibuzoraustine/mpw-checkout-react#readme"
 }
