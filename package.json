@@ -1,7 +1,7 @@
 {
   "name": "mpw-checkout-react",
   "version": "0.0.1",
-  "description": "Simplify your payment processing with this intuitive React library! Seamlessly integrate flexible checkout options into your applications—whether you want full control with a modal or an inline experience. Customize your payment buttons, handle success and failure callbacks effortlessly, and enjoy a responsive interface that keeps your users engaged. Start transforming your payment workflow today!",
+  "description": "Simplify your payment processing with this intuitive React library! Seamlessly integrate MoiPayWay flexible checkout options into your applications—whether you want full control with a modal or an inline experience. Customize your payment buttons, handle success and failure callbacks effortlessly.",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
