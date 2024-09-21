@@ -62,7 +62,8 @@ typeof SuppressedError === "function" ? SuppressedError : function (error, suppr
 
 // export const messageOrigin = "http://localhost:3000";
 var messageOrigin = "https://checkout.moipayway.com";
-var API_URL = "https://api.moipayway.co/wallet/collection/initiate";
+var INITIATE_API_URL = "https://api.moipayway.co/wallet/collection/initiate";
+var INFO_API_URL = "https://api.moipayway.co/wallet/collection/info";
 
 var MPWCheckoutContext = createContext(undefined);
 var useMPWCheckout = function () {
@@ -73,11 +74,11 @@ var useMPWCheckout = function () {
     return context;
 };
 var MPWCheckoutProvider = function (_a) {
-    var children = _a.children, publicKey = _a.publicKey;
-    var _b = useState(false), isOpen = _b[0], setIsOpen = _b[1];
-    var _c = useState(false), isLoading = _c[0], setIsLoading = _c[1];
-    var _d = useState(null), orderReferenceCode = _d[0], setOrderReferenceCode = _d[1];
-    var _e = useState(null), popupWindow = _e[0], setPopupWindow = _e[1];
+    var children = _a.children, _b = _a.publicKey, publicKey = _b === void 0 ? "" : _b;
+    var _c = useState(false), isOpen = _c[0], setIsOpen = _c[1];
+    var _d = useState(false), isLoading = _d[0], setIsLoading = _d[1];
+    var _e = useState(null), orderReferenceCode = _e[0], setOrderReferenceCode = _e[1];
+    var _f = useState(null), popupWindow = _f[0], setPopupWindow = _f[1];
     var callbacksRef = useRef({});
     var initiatePayment = useCallback(function (_a) { return __awaiter(void 0, [_a], void 0, function (_b) {
         var response, data, width, height, left, top_1, newWindow, error_1;
@@ -91,7 +92,7 @@ var MPWCheckoutProvider = function (_a) {
                     _h.label = 1;
                 case 1:
                     _h.trys.push([1, 4, , 5]);
-                    return [4 /*yield*/, fetch(API_URL, {
+                    return [4 /*yield*/, fetch(INITIATE_API_URL, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -109,8 +110,8 @@ var MPWCheckoutProvider = function (_a) {
                     data = _h.sent();
                     if (!data.data || data.status === "failed" || !data.data.order_reference_code) {
                         setIsLoading(false);
-                        (_d = (_c = callbacksRef.current).onFailure) === null || _d === void 0 ? void 0 : _d.call(_c, { data: {}, error: data });
-                        throw new Error('Request failed: invalid publicKey or requestBody');
+                        (_d = (_c = callbacksRef.current).onFailure) === null || _d === void 0 ? void 0 : _d.call(_c, { data: undefined, message: "Error initiating payment" });
+                        return [2 /*return*/];
                     }
                     setOrderReferenceCode(data.data.order_reference_code);
                     setIsOpen(true);
@@ -129,7 +130,67 @@ var MPWCheckoutProvider = function (_a) {
                     error_1 = _h.sent();
                     console.error('There was a problem with the API request:', error_1);
                     setIsLoading(false);
-                    (_f = (_e = callbacksRef.current).onFailure) === null || _f === void 0 ? void 0 : _f.call(_e, { data: {}, error: error_1 });
+                    (_f = (_e = callbacksRef.current).onFailure) === null || _f === void 0 ? void 0 : _f.call(_e, { data: undefined, message: error_1.message });
+                    return [3 /*break*/, 5];
+                case 5: return [2 /*return*/];
+            }
+        });
+    }); }, [publicKey]);
+    var payRefrence = useCallback(function (_a) { return __awaiter(void 0, [_a], void 0, function (_b) {
+        var response, data, width, height, left, top_2, newWindow, error_2;
+        var _c, _d, _e, _f, _g, _h;
+        var orderReferenceCode = _b.orderReferenceCode, onSuccess = _b.onSuccess, onFailure = _b.onFailure, onClose = _b.onClose, _j = _b.displayMode, displayMode = _j === void 0 ? 'inline' : _j;
+        return __generator(this, function (_k) {
+            switch (_k.label) {
+                case 0:
+                    setIsLoading(true);
+                    callbacksRef.current = { onSuccess: onSuccess, onFailure: onFailure, onClose: onClose };
+                    _k.label = 1;
+                case 1:
+                    _k.trys.push([1, 4, , 5]);
+                    return [4 /*yield*/, fetch(INFO_API_URL, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ order_reference_code: orderReferenceCode }),
+                        })];
+                case 2:
+                    response = _k.sent();
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return [4 /*yield*/, response.json()];
+                case 3:
+                    data = _k.sent();
+                    if (!data.data || data.status === "failed" || !data.data.order_reference_code) {
+                        setIsLoading(false);
+                        (_d = (_c = callbacksRef.current).onFailure) === null || _d === void 0 ? void 0 : _d.call(_c, { data: undefined, message: "Invalid order reference code" });
+                        return [2 /*return*/];
+                    }
+                    if (data.data.payment_status !== "Pending") {
+                        setIsLoading(false);
+                        (_f = (_e = callbacksRef.current).onFailure) === null || _f === void 0 ? void 0 : _f.call(_e, { data: data.data, message: "Current order has already been completed (".concat(data.data.payment_status, ")") });
+                        return [2 /*return*/];
+                    }
+                    setOrderReferenceCode(data.data.order_reference_code);
+                    setIsOpen(true);
+                    if (displayMode === 'popup') {
+                        width = 500;
+                        height = 600;
+                        left = (window.screen.width / 2) - (width / 2);
+                        top_2 = (window.screen.height / 2) - (height / 2);
+                        newWindow = window.open("".concat(messageOrigin, "/popup/").concat(data.data.order_reference_code), "MPWCheckout", "width=".concat(width, ",height=").concat(height, ",left=").concat(left, ",top=").concat(top_2));
+                        if (newWindow) {
+                            setPopupWindow(newWindow);
+                        }
+                    }
+                    return [3 /*break*/, 5];
+                case 4:
+                    error_2 = _k.sent();
+                    console.error('There was a problem with the API request:', error_2);
+                    setIsLoading(false);
+                    (_h = (_g = callbacksRef.current).onFailure) === null || _h === void 0 ? void 0 : _h.call(_g, { data: undefined, message: error_2.message });
                     return [3 /*break*/, 5];
                 case 5: return [2 /*return*/];
             }
@@ -170,7 +231,7 @@ var MPWCheckoutProvider = function (_a) {
                 popupWindow.close();
                 setPopupWindow(null);
             }
-            (_f = (_e = callbacksRef.current).onFailure) === null || _f === void 0 ? void 0 : _f.call(_e, message.data);
+            (_f = (_e = callbacksRef.current).onFailure) === null || _f === void 0 ? void 0 : _f.call(_e, { data: message.data, message: "Payment Failed" });
         }
     }, [popupWindow]);
     useEffect(function () {
@@ -191,6 +252,7 @@ var MPWCheckoutProvider = function (_a) {
         orderReferenceCode: orderReferenceCode,
         popupWindow: popupWindow,
         initiatePayment: initiatePayment,
+        payRefrence: payRefrence,
         setIsOpen: setIsOpen,
     };
     return (React.createElement(MPWCheckoutContext.Provider, { value: value }, children));
@@ -244,5 +306,28 @@ var MPWCheckout = function (_a) {
         displayMode === 'inline' && (React.createElement(MPWCheckoutModal, { isOpen: isOpen, orderReferenceCode: orderReferenceCode }))));
 };
 
-export { MPWCheckout, MPWCheckoutModal, MPWCheckoutProvider, useMPWCheckout };
+// MPWCheckoutButton.tsx
+var MPWCheckoutRefButton = function (_a) {
+    var children = _a.children, onClick = _a.onClick, isLoading = _a.isLoading;
+    return (React.createElement("button", { onClick: onClick, disabled: isLoading, style: { display: "flex", gap: "10px", alignItems: "center", padding: "12px 15px", backgroundColor: "#111827", fontSize: "13px", borderRadius: "10px", minWidth: "100px", color: "#fff", fontFamily: "cursive" } }, isLoading ? "Processing Payment ..." : children ||
+        React.createElement(React.Fragment, null,
+            React.createElement("span", null, "Checkout with"),
+            React.createElement("div", { style: { display: "flex", gap: "5px", alignItems: "center" } },
+                React.createElement("img", { src: "https://checkout.moipayway.com/moipayway-icon.png", alt: "icon", style: { width: '20px' } }),
+                React.createElement("span", null, "MoiPayWay")))));
+};
+
+// MPWCheckout.tsx
+var MPWCheckoutRef = function (_a) {
+    var children = _a.children, orderReferenceCode = _a.orderReferenceCode, onSuccess = _a.onSuccess, onFailure = _a.onFailure, _b = _a.displayMode, displayMode = _b === void 0 ? 'inline' : _b;
+    var _c = useMPWCheckout(), isLoading = _c.isLoading, payRefrence = _c.payRefrence, isOpen = _c.isOpen, refCode = _c.orderReferenceCode;
+    var handlePayReference = function () {
+        payRefrence({ orderReferenceCode: orderReferenceCode, onSuccess: onSuccess, onFailure: onFailure, displayMode: displayMode });
+    };
+    return (React.createElement(React.Fragment, null,
+        React.createElement(MPWCheckoutRefButton, { onClick: handlePayReference, isLoading: isLoading }, children),
+        displayMode === 'inline' && (React.createElement(MPWCheckoutModal, { isOpen: isOpen, orderReferenceCode: refCode }))));
+};
+
+export { MPWCheckout, MPWCheckoutModal, MPWCheckoutProvider, MPWCheckoutRef, useMPWCheckout };
 //# sourceMappingURL=index.esm.js.map

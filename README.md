@@ -1,6 +1,6 @@
 <h1>MoiPayWay Checkout React</h1>
 
-`MPWCheckout` is a React component library for integrating the MoiPayWay payment gateway into your React applications. This package allows developers to initiate payments, display checkout modals, and handle payment success and failure events seamlessly, with support for both inline and popup modes.
+`MPWCheckout` is a versatile React component library that integrates the MoiPayWay payment gateway into your React apps. It supports both inline and popup payment modes, and now offers two distinct ways to handle payments: initiating payments with `MPWCheckout` or continuing existing payments with `MPWCheckoutRef` using an `orderReferenceCode`.
 
 <h2>Table of Contents</h2>
 
@@ -11,11 +11,13 @@
   - [Using Inline Checkout](#using-inline-checkout)
   - [Using Popup Checkout](#using-popup-checkout)
   - [Customizing Checkout Button](#customizing-checkout-button)
-  - [Using MPWCheckoutModal for Full Control](#using-mpwcheckoutmodal-for-full-control)
+  - [Continue Payment with Order Reference](#continue-payment-with-order-reference)
+  - [Full Checkout Control](#full-checkout-control)
 - [API](#api)
   - [`MPWCheckoutProvider`](#mpwcheckoutprovider)
   - [`useMPWCheckout`](#usempwcheckout)
   - [`MPWCheckout`](#mpwcheckout)
+  - [`MPWCheckoutRef`](#mpwcheckoutref)
   - [`MPWCheckoutModal`](#mpwcheckoutmodal)
 - [Contributing](#contributing)
 - [License](#license)
@@ -37,7 +39,7 @@ npm install mpw-checkout-react
 
 ### Basic Setup
 
-Wrap your application in the `MPWCheckoutProvider` to provide the necessary context for the checkout flow. You'll need to pass your `publicKey` to the provider.
+Wrap your app in `MPWCheckoutProvider` to provide the necessary context. The `publicKey` is only required if you're using `MPWCheckout` to initiate payments. If you're continuing a payment with `MPWCheckoutRef`, the `publicKey` is optional.
 
 ```tsx
 import React from 'react';
@@ -119,11 +121,26 @@ You can fully customize the checkout button by passing your own child components
 </MPWCheckout>
 ```
 
-### Using MPWCheckoutModal for Full Control
+### Continue Payment with Order Reference
 
-If you want full control over the checkout process, you can use the `useMPWCheckout` hook to initiate transactions with your own button. The `MPWCheckoutModal` is necessary for displaying the payment iframe.
+If the payment has already been initiated and you have an `orderReferenceCode`, use `MPWCheckoutRef` to continue the payment without needing a `publicKey`.
+```tsx
+import { MPWCheckoutRef } from 'mpw-checkout-react';
 
-Here's how you can do it:
+const ContinuePaymentButton = () => (
+  <MPWCheckoutRef
+    orderReferenceCode="your-order-reference-code"
+    onSuccess={(data) => console.log('Payment Successful', data)}
+    onFailure={(error) => console.error('Payment Failed', error)}
+  />
+);
+```
+
+### Full Checkout Control
+
+For full control, use the `useMPWCheckout` hook. You can either initiate a new payment or continue a payment using the `payReference` and `orderReferenceCode`. The `MPWCheckoutModal` is necessary for displaying the payment iframe.
+
+**Initiate a Payment**
 ```tsx
 import React from 'react';
 import { useMPWCheckout, MPWCheckoutModal } from 'mpw-checkout-react';
@@ -143,7 +160,39 @@ const CustomPayButton = () => {
   return (
     <>
       <div className='mb-3'>
-        <button onClick={handlePayment} disabled={isLoading}>Submit</button> 
+        <button onClick={handlePayment} disabled={isLoading}>Pay</button> 
+      </div>
+      <MPWCheckoutModal isOpen={isOpen} orderReferenceCode={orderReferenceCode} />
+    </>
+  );
+};
+
+export default CustomPayButton;
+```
+
+**Continue a Payment**
+
+If you want full control of the payment process using an existing `orderReferenceCode`, you can use `payReference` from `useMPWCheckout`:
+```tsx
+import React from 'react';
+import { useMPWCheckout, MPWCheckoutModal } from 'mpw-checkout-react';
+
+const CustomPayButton = () => {
+  const { payReference, isLoading, isOpen, orderReferenceCode } = useMPWCheckout();
+
+  const handlePayment = () => {
+    payReference({
+      orderReferenceCode: "input order reference code",
+      onSuccess: (data) => console.log('Payment successful', data),
+      onFailure: (data) => console.log('Payment failed', data),
+      onClose: (data) => console.log("Closed data:", data)
+    });
+  };
+
+  return (
+    <>
+      <div className='mb-3'>
+        <button onClick={handlePayment} disabled={isLoading}>Pay</button> 
       </div>
       <MPWCheckoutModal isOpen={isOpen} orderReferenceCode={orderReferenceCode} />
     </>
@@ -157,10 +206,10 @@ export default CustomPayButton;
 
 ### `MPWCheckoutProvider`
 
-Provides the checkout context to all child components. This is required to use any checkout features.
+Wraps your app and provides the checkout context. The `publicKey` is optional but required if using `MPWCheckout` to initiate payments.
 
 **Props**
-- `publicKey` (string): Your public key for the MoiPayWay payment system.
+- `publicKey` (string, optional): Public key for the MoiPayWay gateway, required for MPWCheckout.
 
 **Example**
 ```tsx
@@ -171,7 +220,10 @@ Provides the checkout context to all child components. This is required to use a
 
 ### `useMPWCheckout`
 
-A hook that gives access to the payment state and functions such as `initiatePayment`, `isOpen`, `isLoading`, and more.
+A hook that gives access to the payment state and functions such as `initiatePayment`, `payReference`, `isOpen`, `isLoading`, and more.
+
+- `initiatePayment`: Starts a new payment flow with the provided `requestBody`.
+- `payReference`: Continues a payment using an existing `orderReferenceCode`.
 
 **Example**
 ```tsx
@@ -180,7 +232,7 @@ const { initiatePayment, isLoading } = useMPWCheckout();
 
 ### `MPWCheckout`
 
-A component that initiates the payment process. It provides an easy-to-use interface for both inline and popup modes.
+A component that initiates the payment process. It provides an easy-to-use interface for both inline and popup modes. Requires a publicKey to be passed in the provider.
 
 **Props**
 - `requestBody`: An object containing the details of the payment.
@@ -199,6 +251,29 @@ A component that initiates the payment process. It provides an easy-to-use inter
 >
   Pay Now
 </MPWCheckout>
+```
+
+### `MPWCheckoutRef`
+
+Use this component to continue a payment that has already been initiated. An orderReferenceCode is required. No publicKey is required in the provider.
+
+**Props**
+- `orderReferenceCode`: (string): Required reference code from the initial payment.
+- `onSuccess`(optional): A callback function that is called when the payment is successful.
+- `onFailure`(optional): A callback function that is called when the payment fails.
+- `onClosed`(optional): A callback function that is called when the payment modal or window is closed by clicking the close button.
+- `displayMode` (optional): "inline" or "popup". Defaults to "inline".
+
+**Example**
+```tsx
+<MPWCheckoutRef
+  orderReferenceCode={"orderReferenceCode"}
+  onSuccess={handleSuccess}
+  onFailure={handleFailure}
+  displayMode="popup"
+>
+  Pay Now
+</MPWCheckoutRef>
 ```
 
 ### `MPWCheckoutModal`
