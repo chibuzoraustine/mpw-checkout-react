@@ -14,13 +14,13 @@ const MPWCheckoutRef: React.FC<MPWCheckoutRefProps> = ({
 }) => {
   const { 
     isLoading, 
-    payRefrence, 
+    payReference, 
     isOpen, 
     orderReferenceCode: refCode, 
   } = useMPWCheckout();
 
   const handlePayReference = () => {
-    payRefrence({orderReferenceCode, onSuccess, onFailure, displayMode});
+    payReference({orderReferenceCode, onSuccess, onFailure, displayMode});
   };
 
   return (

@@ -71,7 +71,7 @@ export interface MPWCheckoutContextType {
     orderReferenceCode: string | null;
     popupWindow: Window | null;
     initiatePayment: (params: InitiatePaymentParams) => Promise<void>;
-    payRefrence: (params: PayReferenceParams) => Promise<void>;
+    payReference: (params: PayReferenceParams) => Promise<void>;
     setIsOpen: (isOpen: boolean) => void;
 }
 export interface IOrderInfo {

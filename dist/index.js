@@ -138,7 +138,7 @@ var MPWCheckoutProvider = function (_a) {
             }
         });
     }); }, [publicKey]);
-    var payRefrence = React.useCallback(function (_a) { return __awaiter(void 0, [_a], void 0, function (_b) {
+    var payReference = React.useCallback(function (_a) { return __awaiter(void 0, [_a], void 0, function (_b) {
         var response, data, width, height, left, top_2, newWindow, error_2;
         var _c, _d, _e, _f, _g, _h;
         var orderReferenceCode = _b.orderReferenceCode, onSuccess = _b.onSuccess, onFailure = _b.onFailure, onClose = _b.onClose, _j = _b.displayMode, displayMode = _j === void 0 ? 'inline' : _j;
@@ -254,7 +254,7 @@ var MPWCheckoutProvider = function (_a) {
         orderReferenceCode: orderReferenceCode,
         popupWindow: popupWindow,
         initiatePayment: initiatePayment,
-        payRefrence: payRefrence,
+        payReference: payReference,
         setIsOpen: setIsOpen,
     };
     return (React.createElement(MPWCheckoutContext.Provider, { value: value }, children));
@@ -322,9 +322,9 @@ var MPWCheckoutRefButton = function (_a) {
 // MPWCheckout.tsx
 var MPWCheckoutRef = function (_a) {
     var children = _a.children, orderReferenceCode = _a.orderReferenceCode, onSuccess = _a.onSuccess, onFailure = _a.onFailure, _b = _a.displayMode, displayMode = _b === void 0 ? 'inline' : _b;
-    var _c = useMPWCheckout(), isLoading = _c.isLoading, payRefrence = _c.payRefrence, isOpen = _c.isOpen, refCode = _c.orderReferenceCode;
+    var _c = useMPWCheckout(), isLoading = _c.isLoading, payReference = _c.payReference, isOpen = _c.isOpen, refCode = _c.orderReferenceCode;
     var handlePayReference = function () {
-        payRefrence({ orderReferenceCode: orderReferenceCode, onSuccess: onSuccess, onFailure: onFailure, displayMode: displayMode });
+        payReference({ orderReferenceCode: orderReferenceCode, onSuccess: onSuccess, onFailure: onFailure, displayMode: displayMode });
     };
     return (React.createElement(React.Fragment, null,
         React.createElement(MPWCheckoutRefButton, { onClick: handlePayReference, isLoading: isLoading }, children),

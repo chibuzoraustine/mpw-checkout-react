@@ -81,7 +81,7 @@ export const MPWCheckoutProvider: React.FC<MPWCheckoutProviderProps> = ({
         }
     }, [publicKey]);
 
-    const payRefrence = useCallback(async ({
+    const payReference = useCallback(async ({
         orderReferenceCode,
         onSuccess,
         onFailure,
@@ -200,7 +200,7 @@ export const MPWCheckoutProvider: React.FC<MPWCheckoutProviderProps> = ({
         orderReferenceCode,
         popupWindow,
         initiatePayment,
-        payRefrence,
+        payReference,
         setIsOpen,
     };
 
